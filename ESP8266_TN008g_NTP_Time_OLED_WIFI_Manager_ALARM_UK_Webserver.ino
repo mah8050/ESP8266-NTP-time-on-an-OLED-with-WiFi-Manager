@@ -236,6 +236,7 @@ void display_time(){ // Note Ticker called routines cannot get a time update usi
   {
     display.fillRect(0,32,10,20,BLACK);
   }
+  //dim display at 23:00 untill 6:30.
   if ((hours >= 23 && minutes >= 0)||(hours <= 6 && minutes <=30)|| dimmed) display.dim2(true); else display.dim2(false);
   display.display(); //Update the screen
 }
@@ -457,7 +458,7 @@ void alarm_ONOFF() {
   update_webpage();
   server.send(200, "text/html", webpage);
 }
-
+//To dim Display using web interface.
 void dim() {
   if (dimmed){
     dimmed=false;
