@@ -14,7 +14,7 @@
 // (c) D L Bird 2016
 //
 String   clock_version = "10.0";
-#include <NTPClient.h> 
+#include <NTPClient.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
@@ -38,11 +38,11 @@ WiFiUDP time_udp;
 Ticker  screen_update;
 
 // You can specify the time server source and time-zone offset in milli-seconds.
-float TimeZone;
+float TimeZone=12600000;
 bool  AMPM = false;
 int   epoch,local_epoch,current_year,current_month,current_day,dayOfWeek,hours,UTC_hours,minutes,seconds;
 byte  set_status, alarm_HR, alarm_MIN, alarmed;
-bool  DST = false, dstUK, dstUSA, dstAUS, alarm_triggered = false; // DayLightSaving on/off and selected zone indicators
+bool  DST = false, dstUK, dstUSA, dstAUS, alarm_triggered = false, dimmed=false; // DayLightSaving on/off and selected zone indicators
 
 #define output_pin D1 // the alarm pin that goes high when triggered, note this is the only spare Data pin
 
@@ -70,6 +70,7 @@ void setup(){
   //  9 - Alarm Hours
   // 10 - Alarm Minutes
   // 11 - alarmed (nor not)
+  // 12 - dimmed or not
   EEPROM.get(0,TimeZone);
   EEPROM.get(4,AMPM);
   // A simple test of first CPU usage, if first time run the probability of these locations equating to 0 is low, so initilaise the timezone
@@ -108,6 +109,7 @@ void setup(){
 
   timeClient.begin(); // Start the NTP service for time 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
+  digitalWrite(LED_BUILTIN,HIGH);
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -138,6 +140,7 @@ void setup(){
   server.on("/ALARM_RESET", alarm_RESET);       // Define what happens when a client requests attention
   server.on("/ALARM_ONOFF", alarm_ONOFF);       // Define what happens when a client requests attention
   server.on("/RESET_VALUES", reset_values);     // Define what happens when a client requests attention
+  server.on("/DIM",dim);
   server.on("/EXIT_SETUP", exit_setup);         // Define what happens when a client requests attention
 }
 
@@ -185,7 +188,6 @@ void display_time(){ // Note Ticker called routines cannot get a time update usi
   display.setTextSize(1); // Display size is 10 x 6 characters when set to size=1 where font size is 6x6 pixels
   display.setCursor((64 - day_of_week[dayOfWeek].length()*6)/2,0); // Display size is 10 characters per line and 6 rows when set to size=1 when font size is 6x6 pixels
   display.println(day_of_week[dayOfWeek]); // Extract and print day of week
-  
   display.setCursor(4,8); // centre date display
   display.print((current_day<10?"0":"")+String(current_day)+"-"+month_of_year[current_month]+"-"+String(current_year).substring(2)); // print Day-Month-Year
   display.setTextSize(2);  // Increase text size for time display
@@ -234,6 +236,7 @@ void display_time(){ // Note Ticker called routines cannot get a time update usi
   {
     display.fillRect(0,32,10,20,BLACK);
   }
+  if ((hours >= 23 && minutes >= 0)||(hours <= 6 && minutes <=30)|| dimmed) display.dim2(true); else display.dim2(false);
   display.display(); //Update the screen
 }
 
@@ -287,6 +290,7 @@ void append_webpage_header() {
   // webpage is a global variable
   webpage = ""; // A blank string variable to hold the web page
   webpage += "<!DOCTYPE html><html><head><title>ESP8266 NTP Clock</title>";
+  webpage += "<meta charset=\"utf-8\" />";
   webpage += "<style>";
   webpage += "#header  {background-color:#6A6AE2; font-family:tahoma; width:1280px; padding:10px; color:white; text-align:center; }";
   webpage += "#section {background-color:#E6E6FA; font-family:tahoma; width:1280px; padding:10px; color_blue;  font-size:22px; text-align:center;}";
@@ -296,7 +300,7 @@ void append_webpage_header() {
 
 void update_webpage(){
   append_webpage_header();
-  webpage += "<div id=\"header\"><h1>NTP OLED Clock Setup "+clock_version+"</h1></div>";
+  webpage += "<div id=\"header\"><h1>"+clock_version+"ساعت فارسی ورژن</h1></div>";
   webpage += "<div id=\"section\"><h2>Time Zone, AM-PM and DST Mode Selection</h2>"; 
   webpage += "[AM-PM Mode: ";
   if (AMPM) webpage += "ON]"; else webpage += "OFF]";
@@ -339,6 +343,7 @@ void update_webpage(){
   webpage += "<a href=\"ALARM_ONOFF\">Alarm ON/OFF</a></p>";
       
   webpage += "<p><a href=\"RESET_VALUES\">Reset clock parameters</a></p>";
+  webpage += "<p><a href=\"DIM\">Dim Brightness</a></p>";
   webpage += "<p><a href=\"EXIT_SETUP\">Run the clock</a></p>";
   
   webpage += "</div>"; 
@@ -453,6 +458,17 @@ void alarm_ONOFF() {
   server.send(200, "text/html", webpage);
 }
 
+void dim() {
+  if (dimmed){
+    dimmed=false;
+  }
+  else{
+    dimmed=true;
+  }
+  update_webpage();
+  server.send(200, "text/html",webpage);
+}
+
 void reset_values() {
   AMPM       = false;
   TimeZone   = 0;
@@ -463,6 +479,7 @@ void reset_values() {
   alarm_HR   = 06;
   alarm_MIN  = 30;
   alarmed    = false;
+  dimmed     = false;
   EEPROM.put(0,TimeZone);
   EEPROM.put(4,AMPM);
   EEPROM.put(5,set_status);
