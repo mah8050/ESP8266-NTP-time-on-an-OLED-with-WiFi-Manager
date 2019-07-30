@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Users\\Maxi_\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**",
+                "C:\\Users\\Maxi_\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
+                "C:\\Users\\Maxi_\\Documents\\Arduino\\libraries\\**",
+                "C:\\Users\\Maxi_\\Documents\\Arduino\\libraries\\Adafruit_GFX_Library",
+                "C:\\Users\\Maxi_\\Documents\\Arduino\\libraries\\Adafruit_SSD1306-esp8266-64x48",
+                "${workspaceRoot}"
+            ],
+            "forcedInclude": [],
+            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
