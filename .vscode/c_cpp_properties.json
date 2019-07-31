@@ -5,9 +5,8 @@
             "includePath": [
                 "C:\\Users\\Maxi_\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**",
                 "C:\\Users\\Maxi_\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
-                "C:\\Users\\Maxi_\\Documents\\Arduino\\libraries\\**",
-                "C:\\Users\\Maxi_\\Documents\\Arduino\\libraries\\Adafruit_GFX_Library",
-                "${workspaceRoot}"
+                "C:\\Users\\Maxi_\\Documents\\Arduino\\libraries\\**"
+
             ],
             "forcedInclude": [],
             "intelliSenseMode": "msvc-x64",

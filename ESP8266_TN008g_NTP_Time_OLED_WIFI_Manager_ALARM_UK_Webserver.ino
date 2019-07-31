@@ -13,7 +13,7 @@
 // ESP8266 Clock displayed on an OLED shield (64x48) using the Network Time Protocol to update every minute
 // (c) D L Bird 2016
 //
-String   clock_version = "10.0";
+String   clock_version = "10.1";
 #include <NTPClient.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -23,7 +23,6 @@ String   clock_version = "10.0";
 
 #include <DNSServer.h>
 #include <WiFiManager.h>      //https://github.com/tzapu/WiFiManager
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h> // SCL = GPIO5 and SDA = GPIO4
 #define  OLED_RESET 0         // GPIO0
@@ -38,7 +37,7 @@ WiFiUDP time_udp;
 Ticker  screen_update;
 
 // You can specify the time server source and time-zone offset in milli-seconds.
-float TimeZone=12600000;
+float TimeZone;
 bool  AMPM = false;
 int   epoch,local_epoch,current_year,current_month,current_day,dayOfWeek,hours,UTC_hours,minutes,seconds;
 byte  set_status, alarm_HR, alarm_MIN, alarmed;
@@ -86,7 +85,6 @@ void setup(){
   //------------------------------
   //WiFiManager intialisation. Once completed there is no need to repeat the process on the current board
   WiFiManager wifiManager;
- 
   // A new OOB ESP8266 will have no credentials, so will connect and not need this to be uncommented and compiled in, a used one will, try it to see how it works
   // Uncomment the next line for a new device or one that has not connected to your Wi-Fi before or you want to reset the Wi-Fi connection
   // Then restart the ESP8266 and connect your PC to the wireless access point called 'ESP8266_AP' or whatever you call it below
@@ -109,7 +107,7 @@ void setup(){
 
   timeClient.begin(); // Start the NTP service for time 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
-  digitalWrite(LED_BUILTIN,HIGH);
+  digitalWrite(LED_BUILTIN,HIGH); //turn off builtin led.
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -237,7 +235,7 @@ void display_time(){ // Note Ticker called routines cannot get a time update usi
     display.fillRect(0,32,10,20,BLACK);
   }
   //dim display at 23:00 untill 6:30.
-  if ((hours >= 23 && minutes >= 0)||(hours <= 6 && minutes <=30)|| dimmed) display.dim2(true); else display.dim2(false);
+  if ((hours >= 23 && minutes >= 0)||(hours <= 6 && minutes <=30)|| dimmed) dim2(true); else dim2(false);
   display.display(); //Update the screen
 }
 
@@ -291,7 +289,7 @@ void append_webpage_header() {
   // webpage is a global variable
   webpage = ""; // A blank string variable to hold the web page
   webpage += "<!DOCTYPE html><html><head><title>ESP8266 NTP Clock</title>";
-  webpage += "<meta charset=\"utf-8\" />";
+  webpage += "<meta charset=\"utf-8\" />"; //utf8 encoding support for webpage
   webpage += "<style>";
   webpage += "#header  {background-color:#6A6AE2; font-family:tahoma; width:1280px; padding:10px; color:white; text-align:center; }";
   webpage += "#section {background-color:#E6E6FA; font-family:tahoma; width:1280px; padding:10px; color_blue;  font-size:22px; text-align:center;}";
@@ -301,7 +299,7 @@ void append_webpage_header() {
 
 void update_webpage(){
   append_webpage_header();
-  webpage += "<div id=\"header\"><h1>"+clock_version+"ساعت فارسی ورژن</h1></div>";
+  webpage += "<div id=\"header\"><h1>NTP Clock Version "+clock_version+"</h1></div>"; // Change to default
   webpage += "<div id=\"section\"><h2>Time Zone, AM-PM and DST Mode Selection</h2>"; 
   webpage += "[AM-PM Mode: ";
   if (AMPM) webpage += "ON]"; else webpage += "OFF]";
@@ -468,6 +466,24 @@ void dim() {
   }
   update_webpage();
   server.send(200, "text/html",webpage);
+}
+void dim2(boolean dim2) {
+  uint8_t contrast;
+  uint8_t precharge;
+  
+  if (dim2) {
+    contrast = 0; // Dimmed display
+  	precharge=0;
+    } else {
+    contrast = 0xCF;
+	  precharge=0x22;
+    }
+  // the range of contrast to too small to be really useful
+  // it is useful to dim the display
+  display.ssd1306_command(SSD1306_SETPRECHARGE);
+  display.ssd1306_command(precharge);
+  display.ssd1306_command(SSD1306_SETCONTRAST);
+  display.ssd1306_command(contrast);
 }
 
 void reset_values() {
