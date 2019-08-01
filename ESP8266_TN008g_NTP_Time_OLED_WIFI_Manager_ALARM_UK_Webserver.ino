@@ -27,6 +27,7 @@ String   clock_version = "10.1";
 #include <Adafruit_SSD1306.h> // SCL = GPIO5 and SDA = GPIO4
 #define  OLED_RESET 0         // GPIO0
 Adafruit_SSD1306 display(OLED_RESET);
+ADC_MODE(ADC_VCC);
 
 String day_of_week[7]    = {"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};  // Sunday is dayOfWeek 0
 String month_of_year[12] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"}; // January is month 0
@@ -37,7 +38,7 @@ WiFiUDP time_udp;
 Ticker  screen_update;
 
 // You can specify the time server source and time-zone offset in milli-seconds.
-float TimeZone;
+float TimeZone, Voltage=0.0;
 bool  AMPM = false;
 int   epoch,local_epoch,current_year,current_month,current_day,dayOfWeek,hours,UTC_hours,minutes,seconds;
 byte  set_status, alarm_HR, alarm_MIN, alarmed;
@@ -205,11 +206,10 @@ void display_time(){ // Note Ticker called routines cannot get a time update usi
   if (AMPM) display.setCursor(10,32); else display.setCursor(19,32); // Move dayOfWeekn to a position that can accomodate seconds display
   display.print("("); display.print((seconds < 10) ? "0" + String(seconds): String(seconds)); display.print(")");
   if (AMPM){ if (hours%24 < 12) display.print("AM"); else display.print("PM");}
-  display.setCursor(12,41); // Move dayOfWeek to a position that can accomodate seconds display
-  if (DST)    display.print("DST-"); else display.print("UTC-"); 
-  if (dstUK)  display.print("UK");
-  if (dstUSA) display.print("USA");
-  if (dstAUS) display.print("AUS"); 
+  display.setCursor(17,41); // Move dayOfWeek to a position that can accomodate seconds display
+  Voltage=ESP.getVcc()*0.0009765625; //Get vcc voltage and display it
+  display.print(Voltage);
+  display.print("V");
   if (hours == alarm_HR && minutes == alarm_MIN && alarmed) {
    if (alarm_triggered) {
      alarm_triggered = false;
