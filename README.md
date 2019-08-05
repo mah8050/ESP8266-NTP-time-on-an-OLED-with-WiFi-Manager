@@ -17,3 +17,5 @@ You need to calculate (Day of Month - DoW) to then determine the minimum value t
 
 Get the NTPClient from here: https://github.com/arduino-libraries/NTPClient
 Get the WeMos OLED drivers frome here: https://github.com/mcauser/Adafruit_SSD1306 or using arduino library manager and get Adafruit SSD1306 Wemos mini oled
+
+For Battery Voltage monitoring add a 47K and 22K resistor in series between battery+ and battery- and connect mid point to A0 pin
