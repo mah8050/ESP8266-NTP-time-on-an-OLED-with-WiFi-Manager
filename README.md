@@ -1,6 +1,7 @@
 # ESP8266-NTP-time-on-an-OLED-with-WiFi-Manager
 
 **** YOU MUST USE THE DISPLAY DRIVER (1306) PROVIDED OR USE THE LINK BELOW **** 
+Files have been changed in order to Works With Visual Studio Code Environment.
 
 An ESP8266 displays accurate time using NTP on an OLED display, using the WiFi Manager to make a network connection.
 This fork contains only one version which is with Alarm.
